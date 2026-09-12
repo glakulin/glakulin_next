@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import "./globals.css";
-import { get_color, get_screen_padding, Flex } from "@/gla_ui";
-import { Header } from "@/components";
+import { get_color } from "@/gla_ui";
 
 const font_body = IBM_Plex_Sans({
   subsets: ["cyrillic-ext", "latin-ext"],
@@ -18,7 +17,7 @@ const font_mono = IBM_Plex_Mono({
   style: ["normal", "italic"],
   display: "swap",
   variable: "--font-mono"
-}); 
+});
 
 const font_heading = IBM_Plex_Serif({
   subsets: ["cyrillic-ext", "latin-ext"],
@@ -26,7 +25,7 @@ const font_heading = IBM_Plex_Serif({
   style: ["normal", "italic"],
   display: "swap",
   variable: "--font-heading"
-}); 
+});
 
 export const metadata: Metadata = {
   title: "glakulin",
@@ -43,16 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           color: get_color("gray_1")
         }}
       >
-        <Header />
-        <Flex tag="main"
-          direction="column"
-          gap={96}
-          css={{
-            ...get_screen_padding()
-          }}
-        >
-          {children}
-        </Flex>
+        {children}
       </body>
     </html>
   );
