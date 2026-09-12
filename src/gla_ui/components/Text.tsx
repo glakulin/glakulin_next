@@ -1,5 +1,5 @@
 import { ElementType } from "react";
-import { get_color, type Colors_Name, FONT_VARIABLE, type Fonts_Name, get_font } from "../tokens";
+import { get_color, type Colors_Name, type Fonts_Name, get_font } from "../tokens";
 import { Default_Props, Box } from ".";
 
 // types
@@ -28,7 +28,7 @@ export function Text<T extends ElementType = "span">({
     <Box {...(rest as any)}
       tag={tag}
       css={{
-        fontFamily: mono ? FONT_VARIABLE.mono : FONT_VARIABLE[font.family],
+        fontFamily: mono ? "var(--font-mono)" : `var(--font-${font.family})`,
         fontSize: font.size,
         fontWeight: font.weight,
         color: color ? get_color(color) : undefined,
