@@ -29,13 +29,13 @@ const font_heading = IBM_Plex_Serif({
 }); 
 
 export const metadata: Metadata = {
-  title: "glinks",
-  description: "glakulin links",
+  title: "glakulin",
+  description: "glakulin",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body
         className={`${font_body.variable} ${font_heading.variable} ${font_mono.variable}`}
         style={{

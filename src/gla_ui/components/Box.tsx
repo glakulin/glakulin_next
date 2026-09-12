@@ -6,8 +6,6 @@ import React from "react";
 
 import {
   css_from_store,
-  get_css_for_classes,
-  get_hash,
   get_store,
   type CSS_Object,
 } from "../css";
@@ -33,27 +31,37 @@ export function Box<
 
   const store = get_store();
 
-  const class_name = css_object
+  const emitted = css_object
     ? css_from_store(store, css_object)
-    : undefined;
+    : [];
 
-  const css_text = class_name
-    ? get_css_for_classes(store, class_name)
-    : "";
+  const class_name = emitted.length
+    ? emitted
+        .map(
+          (emitted_rule) =>
+            emitted_rule.class_name,
+        )
+        .join(" ")
+    : undefined;
 
   return React.createElement(
     React.Fragment,
     null,
-    css_text
-      ? React.createElement(
+    emitted.map(
+      ({
+        class_name: rule_class_name,
+        rule,
+      }) =>
+        React.createElement(
           "style",
           {
-            href: `app-css-${get_hash(css_text)}`,
+            key: rule_class_name,
+            href: rule_class_name,
             precedence: STYLE_PRECEDENCE,
           },
-          css_text,
-        )
-      : null,
+          rule,
+        ),
+    ),
     React.createElement(
       Component,
       {

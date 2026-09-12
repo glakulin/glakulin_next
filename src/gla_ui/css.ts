@@ -25,10 +25,14 @@ export type CSS_Object = {
   [key: string]: CSS_Value | CSS_Object;
 };
 
+export type CSS_Emitted_Rule = {
+  class_name: string;
+  rule: string;
+};
+
 type CSS_Store = {
   class_map: Map<string, string>;
   class_rule_map: Map<string, string>;
-  css_buffer: string[];
 };
 
 const CSS_UNITLESS = new Set([
@@ -93,7 +97,6 @@ const server_get_store =
     ? cache((): CSS_Store => ({
         class_map: new Map(),
         class_rule_map: new Map(),
-        css_buffer: [],
       }))
     : null;
 
@@ -103,15 +106,13 @@ const client_store: CSS_Store | null =
     : {
         class_map: new Map(),
         class_rule_map: new Map(),
-        css_buffer: [],
       };
 
 export function get_store(): CSS_Store {
   return server_get_store ? server_get_store() : client_store!;
 }
 
-// экспортирован: Box'у нужен детерминированный href для <style>
-export function get_hash(value: string): string {
+function get_hash(value: string): string {
   let hash = 5381;
 
   for (let i = 0; i < value.length; i++) {
@@ -343,7 +344,7 @@ function emit_declaration(
   at_rules: string[],
   property: string,
   value: CSS_Value,
-): string {
+): CSS_Emitted_Rule | null {
   const css_property =
     to_css_property(property);
 
@@ -351,7 +352,7 @@ function emit_declaration(
     format_value(property, value);
 
   if (css_value === undefined) {
-    return "";
+    return null;
   }
 
   const declaration =
@@ -370,13 +371,15 @@ function emit_declaration(
     store.class_map.get(rule_key);
 
   if (existing_class !== undefined) {
-    return existing_class;
+    return {
+      class_name: existing_class,
+      rule: store.class_rule_map.get(
+        existing_class,
+      )!,
+    };
   }
 
-  const previous_rule =
-    store.class_rule_map.get(class_name);
-
-  if (previous_rule !== undefined) {
+  if (store.class_rule_map.has(class_name)) {
     throw new Error(
       `CSS hash collision: ${class_name}`,
     );
@@ -410,9 +413,7 @@ function emit_declaration(
     rule,
   );
 
-  store.css_buffer.push(rule);
-
-  return class_name;
+  return { class_name, rule };
 }
 
 function emit_css(
@@ -420,8 +421,8 @@ function emit_css(
   css_object: CSS_Object,
   parent_selector = "",
   at_rules: string[] = [],
-): string[] {
-  const classes: string[] = [];
+): CSS_Emitted_Rule[] {
+  const emitted: CSS_Emitted_Rule[] = [];
 
   for (const [key, value] of Object.entries(
     css_object,
@@ -446,7 +447,7 @@ function emit_css(
         );
       }
 
-      classes.push(
+      emitted.push(
         ...emit_css(
           store,
           value,
@@ -465,7 +466,7 @@ function emit_css(
           key,
         );
 
-      classes.push(
+      emitted.push(
         ...emit_css(
           store,
           value,
@@ -477,7 +478,7 @@ function emit_css(
       continue;
     }
 
-    const class_name =
+    const emitted_rule =
       emit_declaration(
         store,
         parent_selector,
@@ -486,50 +487,28 @@ function emit_css(
         value,
       );
 
-    if (class_name) {
-      classes.push(class_name);
+    if (emitted_rule !== null) {
+      emitted.push(emitted_rule);
     }
   }
 
-  return classes;
+  return emitted;
 }
 
 export function css_from_store(
   store: CSS_Store,
   css_object: CSS_Object,
-): string {
-  return emit_css(store, css_object).join(" ");
-}
-
-export function get_css_for_classes(
-  store: CSS_Store,
-  class_names: string,
-): string {
-  const rules: string[] = [];
-
-  for (const class_name of class_names.split(" ")) {
-    const rule = store.class_rule_map.get(class_name);
-
-    if (rule !== undefined) {
-      rules.push(rule);
-    }
-  }
-
-  return rules.join("");
-}
-
-export function drain_css(store: CSS_Store): string {
-  const css_text = store.css_buffer.join("");
-  store.css_buffer.length = 0;
-  return css_text;
+): CSS_Emitted_Rule[] {
+  return emit_css(store, css_object);
 }
 
 export function css(
   css_object: CSS_Object,
 ): string {
-  return css_from_store(get_store(), css_object);
-}
-
-export function get_css(): string {
-  return drain_css(get_store());
+  return css_from_store(
+    get_store(),
+    css_object,
+  )
+    .map((emitted_rule) => emitted_rule.class_name)
+    .join(" ");
 }
