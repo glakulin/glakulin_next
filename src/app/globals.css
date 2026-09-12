@@ -7,6 +7,8 @@
   box-sizing: border-box;
   position: relative;
   transition: all .333s ease-out;
+  color: inherit;
+  font: inherit;
 }
 
 :root {

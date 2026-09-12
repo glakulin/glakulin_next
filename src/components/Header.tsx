@@ -1,5 +1,3 @@
-"use client"
-
 import { Flex, A, get_screen_padding, Text } from "@/gla_ui";
 
 export function Header() {
@@ -10,7 +8,7 @@ export function Header() {
         ...get_screen_padding()
       }}
     >
-      <A href="https://glakulinks.vercel.app/" target="_blank"><Text>Test</Text></A>
+      <A href={"https://glakulinks.vercel.app/"}><Text></Text></A>
     </Flex>
   </>);
 }
