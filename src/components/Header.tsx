@@ -27,22 +27,22 @@ function Menu({ closing, on_closed }: { closing: boolean; on_closed: () => void 
       css={{
         position: "absolute",
         width: "100%",
-        marginTop: 52,
+        marginTop: 60,
         left: 0,
         ...get_screen_padding(),
-        transformOrigin: "top right",
+        transformOrigin: "top",
 
         animation: closing
-          ? "menuOut 150ms ease-in forwards"
-          : "menuIn 180ms cubic-bezier(0.16, 1, 0.3, 1)",
+          ? "menuOut .333s ease-out forwards"
+          : "menuIn .333s ease-out forwards",
 
         "@keyframes menuIn": {
-          from: { opacity: 0, transform: "translateY(-8px) scale(0.96)" },
-          to:   { opacity: 1, transform: "translateY(0)   scale(1)" },
+          from: { transform: "scaleY(0)" },
+          to:   { transform: "scaleY(1)" },
         },
         "@keyframes menuOut": {
-          from: { opacity: 1, transform: "translateY(0)   scale(1)" },
-          to:   { opacity: 0, transform: "translateY(-8px) scale(0.96)" },
+          from: { transform: "scaleY(1)" },
+          to:   { transform: "scaleY(0)" },
         },
       }}
       onAnimationEnd={closing ? on_closed : undefined}
