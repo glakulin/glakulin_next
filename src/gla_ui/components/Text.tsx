@@ -25,7 +25,7 @@ export function Text<T extends ElementType = "span">({
   let font = get_font(size);
 
   return (
-    <Box {...(rest as any)}
+    <Box {...(rest as Default_Props<T>)}
       tag={tag}
       css={{
         fontFamily: mono ? "var(--font-mono)" : `var(--font-${font.family})`,

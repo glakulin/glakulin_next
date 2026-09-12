@@ -1,15 +1,32 @@
+"use client";
+
 import {
-  css,
-  get_css,
+  ComponentPropsWithoutRef,
+  ElementType,
+  useInsertionEffect,
+} from "react";
+import React from "react";
+
+import {
+  css_from_store,
+  drain_css,
+  get_store,
   type CSS_Object,
 } from "../css";
 
-import type {
-  ComponentPropsWithoutRef,
-  ElementType,
-} from "react";
+const STYLE_TAG_ID = "app-css";
 
-import React from "react";
+function get_style_tag(): HTMLStyleElement {
+  let tag = document.getElementById(STYLE_TAG_ID) as HTMLStyleElement | null;
+
+  if (tag === null) {
+    tag = document.createElement("style");
+    tag.id = STYLE_TAG_ID;
+    document.head.appendChild(tag);
+  }
+
+  return tag;
+}
 
 type Box_Props<
   T extends ElementType = "div",
@@ -28,37 +45,26 @@ export function Box<
 }: Box_Props<T>) {
   const Component = tag ?? "div";
 
-  if (css_object === undefined) {
-    return React.createElement(
-      Component,
-      {
-        ...rest,
-        className,
-      },
-    );
-  }
+  const class_name = css_object
+    ? css_from_store(get_store(), css_object)
+    : undefined;
 
-  const class_name = css(css_object);
-  const css_text = get_css();
+  useInsertionEffect(() => {
+    const css_text = drain_css(get_store());
 
-  return (
-    <>
-      {css_text ? (
-        <style precedence="atomic">
-          {css_text}
-        </style>
-      ) : null}
+    if (css_text) {
+      get_style_tag().append(css_text);
+    }
+  });
 
-      {React.createElement(
-        Component,
-        {
-          ...rest,
-          className:
-            [class_name, className]
-              .filter(Boolean)
-              .join(" ") || undefined,
-        },
-      )}
-    </>
+  return React.createElement(
+    Component,
+    {
+      ...rest,
+      className:
+        [class_name, className]
+          .filter(Boolean)
+          .join(" ") || undefined,
+    },
   );
 }

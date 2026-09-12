@@ -18,9 +18,7 @@ export type CSS_Value =
 export type CSS_Object = {
   [K in keyof CSSProperties]?:
     | CSSProperties[K]
-    | number
-    | number[]
-    | null;
+    | CSS_Value;
 } & {
   [key: `--${string}`]: CSS_Value;
 } & {
@@ -90,13 +88,34 @@ const SUPPORTED_AT_RULES = [
 type Supported_At_Rule =
   (typeof SUPPORTED_AT_RULES)[number];
 
-const get_store = cache(
-  (): CSS_Store => ({
-    class_map: new Map(),
-    class_rule_map: new Map(),
-    css_buffer: [],
-  }),
-);
+// на сервере нужен сброс на каждый запрос (иначе второй запрос, использующий
+// уже виденный где-то класс, не попадёт в css_buffer повторно — className есть,
+// а <style> для этого конкретного ответа пуст) — для этого cache() из "react".
+// На клиенте нет понятия "запрос": документ один на всю сессию, поэтому там
+// используется обычный персистентный синглтон-модуль. cache() специально не
+// вызывается в браузерном рантайме — он либо недоступен, либо не даёт нужных
+// гарантий вне рендера Server Component.
+const server_get_store =
+  typeof window === "undefined"
+    ? cache((): CSS_Store => ({
+        class_map: new Map(),
+        class_rule_map: new Map(),
+        css_buffer: [],
+      }))
+    : null;
+
+const client_store: CSS_Store | null =
+  typeof window === "undefined"
+    ? null
+    : {
+        class_map: new Map(),
+        class_rule_map: new Map(),
+        css_buffer: [],
+      };
+
+export function get_store(): CSS_Store {
+  return server_get_store ? server_get_store() : client_store!;
+}
 
 function get_hash(value: string): string {
   let hash = 5381;
@@ -484,24 +503,28 @@ function emit_css(
   return classes;
 }
 
+// generic-операции над стором — используются и внутренним css()/get_css(),
+// и напрямую компонентом Box (ему нужен доступ к тому же стору, что вернёт
+// get_store(), чтобы дедуп/буфер были общими на весь рендер)
+export function css_from_store(
+  store: CSS_Store,
+  css_object: CSS_Object,
+): string {
+  return emit_css(store, css_object).join(" ");
+}
+
+export function drain_css(store: CSS_Store): string {
+  const css_text = store.css_buffer.join("");
+  store.css_buffer.length = 0;
+  return css_text;
+}
+
 export function css(
   css_object: CSS_Object,
 ): string {
-  const store = get_store();
-
-  return emit_css(
-    store,
-    css_object,
-  ).join(" ");
+  return css_from_store(get_store(), css_object);
 }
 
 export function get_css(): string {
-  const store = get_store();
-
-  const css_text =
-    store.css_buffer.join("");
-
-  store.css_buffer.length = 0;
-
-  return css_text;
+  return drain_css(get_store());
 }
