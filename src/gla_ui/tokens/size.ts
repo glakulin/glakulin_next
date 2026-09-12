@@ -1,4 +1,4 @@
-import type { CSS_Object } from "@/ui/css";
+import type { CSS_Object } from "../css";
 
 // Types
 export type Size = "default" | "xs" | "sm" | "md" | "lg" | "xl"; // export type
