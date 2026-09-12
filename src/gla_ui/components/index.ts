@@ -7,6 +7,7 @@ export { Text } from "./Text";
 export { Box } from "./Box";
 export { Flex } from "./Flex";
 export { Grid } from "./Grid";
+export { A } from "./A";
 
 
 export type Default_Props<T extends ElementType = "div"> = {

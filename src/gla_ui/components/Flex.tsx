@@ -1,19 +1,10 @@
 import { CSSProperties, ElementType } from "react";
-import { Default_Props, Box} from ".";
-import { Rem_Map } from "../tokens";
+import { Default_Props, Box } from ".";
+import { Layout_Props_Base, get_layout_css } from "./layout";
 
 // types
-interface Flex_Props_Base {
+interface Flex_Props_Base extends Layout_Props_Base {
   inline?: boolean;
-
-  padding?: Rem_Map;
-  gap?: Rem_Map;
-  radius?: Rem_Map;
-  
-  align_items?: CSSProperties["alignItems"];
-  align_content?: CSSProperties["alignContent"];
-  justify_items?: CSSProperties["justifyItems"];
-  justify_content?: CSSProperties["justifyContent"];
 
   direction?: CSSProperties["flexDirection"];
   wrap?: CSSProperties["flexWrap"];
@@ -43,24 +34,27 @@ export function Flex<T extends ElementType = "div">({
 
   ...rest
 }: Flex_Props<T>) {
+  const layout_css = get_layout_css({
+    padding,
+    gap,
+    radius,
+    align_items,
+    align_content,
+    justify_items,
+    justify_content,
+  });
+
   return (
-    <Box {...(rest as any)}
+    <Box {...(rest as Default_Props<T>)}
       tag={tag}
       css={{
         display: inline ? "inline-flex" : "flex",
 
-        padding: padding,
-        gap: gap,
-        borderRadius: radius,
-
-        alignItems: align_items,
-        alignContent: align_content,
-        justifyItems: justify_items,
-        justifyContent: justify_content,
+        ...layout_css,
 
         flexDirection: direction,
         flexWrap: wrap,
-        
+
         ...css,
       }}
     >

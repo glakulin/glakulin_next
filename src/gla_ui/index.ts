@@ -8,6 +8,6 @@ export {
 
 
 export {
-  Box, Flex, Grid, Text, Icon, 
+  Box, Flex, Grid, Text, Icon, A,
   type Icon_Name
 } from "./components";

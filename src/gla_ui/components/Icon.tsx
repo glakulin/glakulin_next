@@ -28,7 +28,7 @@ export function Icon({
   return (
     <Box {...rest}
       tag="i" 
-      className={`nf ${name} transition`} 
+      className={`nf ${name}`} 
       css={{
         fontSize: size,
         color: color ? get_color(color) : undefined,

@@ -1,26 +1,17 @@
 import { CSSProperties, ElementType } from "react";
 import { Default_Props, Box } from ".";
-import { Rem_Map } from "../tokens";
+import { Layout_Props_Base, get_layout_css } from "./layout";
 
 // types
-interface Grid_Props_Base {
+interface Grid_Props_Base extends Layout_Props_Base {
   inline?: boolean;
 
-  padding?: Rem_Map;
-  gap?: Rem_Map;
-  radius?: Rem_Map;
-
-  align_items?: CSSProperties["alignItems"];
-  align_content?: CSSProperties["alignContent"];
-  justify_items?: CSSProperties["justifyItems"];
-  justify_content?: CSSProperties["justifyContent"];
-
-  templateColumns?: CSSProperties["gridTemplateColumns"];
-  templateRows?: CSSProperties["gridTemplateRows"];
-  templateAreas?: CSSProperties["gridTemplateAreas"];
-  autoFlow?: CSSProperties["gridAutoFlow"];
-  placeItems?: CSSProperties["placeItems"];
-  placeContent?: CSSProperties["placeContent"];
+  template_columns?: CSSProperties["gridTemplateColumns"];
+  template_rows?: CSSProperties["gridTemplateRows"];
+  template_areas?: CSSProperties["gridTemplateAreas"];
+  auto_flow?: CSSProperties["gridAutoFlow"];
+  place_items?: CSSProperties["placeItems"];
+  place_content?: CSSProperties["placeContent"];
 }
 
 type Grid_Props<T extends ElementType = "div"> = Grid_Props_Base & Default_Props<T>;
@@ -42,36 +33,39 @@ export function Grid<T extends ElementType = "div">({
   justify_items,
   justify_content,
 
-  templateColumns,
-  templateRows,
-  templateAreas,
-  autoFlow,
-  placeItems,
-  placeContent,
+  template_columns,
+  template_rows,
+  template_areas,
+  auto_flow,
+  place_items,
+  place_content,
 
   ...rest
 }: Grid_Props<T>) {
+  const layout_css = get_layout_css({
+    padding,
+    gap,
+    radius,
+    align_items,
+    align_content,
+    justify_items,
+    justify_content,
+  });
+
   return (
-    <Box {...(rest as any)}
+    <Box {...(rest as Default_Props<T>)}
       tag={tag}
       css={{
         display: inline ? "inline-grid" : "grid",
 
-        padding: padding,
-        gap: gap,
-        borderRadius: radius,
+        ...layout_css,
 
-        alignItems: align_items,
-        alignContent: align_content,
-        justifyItems: justify_items,
-        justifyContent: justify_content,
-
-        gridTemplateColumns: templateColumns,
-        gridTemplateRows: templateRows,
-        gridTemplateAreas: templateAreas,
-        gridAutoFlow: autoFlow,
-        placeItems: placeItems,
-        placeContent: placeContent,
+        gridTemplateColumns: template_columns,
+        gridTemplateRows: template_rows,
+        gridTemplateAreas: template_areas,
+        gridAutoFlow: auto_flow,
+        placeItems: place_items,
+        placeContent: place_content,
 
         ...css,
       }}
