@@ -88,13 +88,6 @@ const SUPPORTED_AT_RULES = [
 type Supported_At_Rule =
   (typeof SUPPORTED_AT_RULES)[number];
 
-// на сервере нужен сброс на каждый запрос (иначе второй запрос, использующий
-// уже виденный где-то класс, не попадёт в css_buffer повторно — className есть,
-// а <style> для этого конкретного ответа пуст) — для этого cache() из "react".
-// На клиенте нет понятия "запрос": документ один на всю сессию, поэтому там
-// используется обычный персистентный синглтон-модуль. cache() специально не
-// вызывается в браузерном рантайме — он либо недоступен, либо не даёт нужных
-// гарантий вне рендера Server Component.
 const server_get_store =
   typeof window === "undefined"
     ? cache((): CSS_Store => ({
@@ -117,7 +110,8 @@ export function get_store(): CSS_Store {
   return server_get_store ? server_get_store() : client_store!;
 }
 
-function get_hash(value: string): string {
+// экспортирован: Box'у нужен детерминированный href для <style>
+export function get_hash(value: string): string {
   let hash = 5381;
 
   for (let i = 0; i < value.length; i++) {
@@ -372,23 +366,6 @@ function emit_declaration(
   const hash = get_hash(rule_key);
   const class_name = `a${hash}`;
 
-  const previous_rule =
-    store.class_rule_map.get(class_name);
-
-  if (
-    previous_rule !== undefined &&
-    previous_rule !== rule_key
-  ) {
-    throw new Error(
-      `CSS hash collision: ${class_name}`,
-    );
-  }
-
-  store.class_rule_map.set(
-    class_name,
-    rule_key,
-  );
-
   const existing_class =
     store.class_map.get(rule_key);
 
@@ -396,10 +373,14 @@ function emit_declaration(
     return existing_class;
   }
 
-  store.class_map.set(
-    rule_key,
-    class_name,
-  );
+  const previous_rule =
+    store.class_rule_map.get(class_name);
+
+  if (previous_rule !== undefined) {
+    throw new Error(
+      `CSS hash collision: ${class_name}`,
+    );
+  }
 
   const class_selector = selector
     ? selector.replaceAll(
@@ -418,6 +399,16 @@ function emit_declaration(
   ) {
     rule = `${at_rules[i]}{${rule}}`;
   }
+
+  store.class_map.set(
+    rule_key,
+    class_name,
+  );
+
+  store.class_rule_map.set(
+    class_name,
+    rule,
+  );
 
   store.css_buffer.push(rule);
 
@@ -503,14 +494,28 @@ function emit_css(
   return classes;
 }
 
-// generic-операции над стором — используются и внутренним css()/get_css(),
-// и напрямую компонентом Box (ему нужен доступ к тому же стору, что вернёт
-// get_store(), чтобы дедуп/буфер были общими на весь рендер)
 export function css_from_store(
   store: CSS_Store,
   css_object: CSS_Object,
 ): string {
   return emit_css(store, css_object).join(" ");
+}
+
+export function get_css_for_classes(
+  store: CSS_Store,
+  class_names: string,
+): string {
+  const rules: string[] = [];
+
+  for (const class_name of class_names.split(" ")) {
+    const rule = store.class_rule_map.get(class_name);
+
+    if (rule !== undefined) {
+      rules.push(rule);
+    }
+  }
+
+  return rules.join("");
 }
 
 export function drain_css(store: CSS_Store): string {

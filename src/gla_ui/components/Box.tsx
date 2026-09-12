@@ -1,32 +1,18 @@
-"use client";
-
 import {
   ComponentPropsWithoutRef,
   ElementType,
-  useInsertionEffect,
 } from "react";
 import React from "react";
 
 import {
   css_from_store,
-  drain_css,
+  get_css_for_classes,
+  get_hash,
   get_store,
   type CSS_Object,
 } from "../css";
 
-const STYLE_TAG_ID = "app-css";
-
-function get_style_tag(): HTMLStyleElement {
-  let tag = document.getElementById(STYLE_TAG_ID) as HTMLStyleElement | null;
-
-  if (tag === null) {
-    tag = document.createElement("style");
-    tag.id = STYLE_TAG_ID;
-    document.head.appendChild(tag);
-  }
-
-  return tag;
-}
+const STYLE_PRECEDENCE = "app";
 
 type Box_Props<
   T extends ElementType = "div",
@@ -45,26 +31,38 @@ export function Box<
 }: Box_Props<T>) {
   const Component = tag ?? "div";
 
+  const store = get_store();
+
   const class_name = css_object
-    ? css_from_store(get_store(), css_object)
+    ? css_from_store(store, css_object)
     : undefined;
 
-  useInsertionEffect(() => {
-    const css_text = drain_css(get_store());
-
-    if (css_text) {
-      get_style_tag().append(css_text);
-    }
-  });
+  const css_text = class_name
+    ? get_css_for_classes(store, class_name)
+    : "";
 
   return React.createElement(
-    Component,
-    {
-      ...rest,
-      className:
-        [class_name, className]
-          .filter(Boolean)
-          .join(" ") || undefined,
-    },
+    React.Fragment,
+    null,
+    css_text
+      ? React.createElement(
+          "style",
+          {
+            href: `app-css-${get_hash(css_text)}`,
+            precedence: STYLE_PRECEDENCE,
+          },
+          css_text,
+        )
+      : null,
+    React.createElement(
+      Component,
+      {
+        ...rest,
+        className:
+          [class_name, className]
+            .filter(Boolean)
+            .join(" ") || undefined,
+      },
+    ),
   );
 }

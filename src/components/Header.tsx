@@ -8,7 +8,7 @@ export function Header() {
         ...get_screen_padding()
       }}
     >
-      <A href={"https://glakulinks.vercel.app/"}><Text></Text></A>
+      <A href={"https://glakulinks.vercel.app/"}><Text>Test</Text></A>
     </Flex>
   </>);
 }
