@@ -2,9 +2,9 @@ import { type CSS_Object } from "../css";
 import { ComponentPropsWithoutRef, ElementType } from "react";
 
 
+export { Box } from "./Box";
 export { Icon, type Icon_Name } from "./Icon";
 export { Text } from "./Text";
-export { Box } from "./Box";
 export { Flex } from "./Flex";
 export { Grid } from "./Grid";
 export { A } from "./A";

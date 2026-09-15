@@ -1,8 +1,9 @@
 "use client";
 
 import { Flex, A, get_screen_padding, Text, Icon, get_color, Icon_Name } from "@/gla_ui";
-import { Logo, Logo_Links } from ".";
+import { Logo, Logo_Links, PAGES } from ".";
 import { useEffect, useState } from "react";
+import { CSS_Object } from "@/gla_ui/css";
 
 export function Glinks() {
   return (
@@ -16,9 +17,10 @@ export function Glinks() {
   );
 }
 
-const PAGES: { name: string; href: string; icon: Icon_Name }[] = [
-  { name: "Donate", href: "/donate", icon: "nf-fa-hand_holding_dollar" },
-];
+let back_style: CSS_Object = {
+  border: `2px solid ${get_color("gray_8")}`,
+  backgroundColor: get_color("gray_9")
+}
 
 function Menu({ closing, on_closed }: { closing: boolean; on_closed: () => void }) {
   return (
@@ -53,7 +55,7 @@ function Menu({ closing, on_closed }: { closing: boolean; on_closed: () => void 
         padding={8}
         css={{
           width: "100%",
-          border: `2px solid ${get_color("gray_8")}`,
+          ...back_style
         }}
       >
         <Glinks />
@@ -72,7 +74,6 @@ function Menu({ closing, on_closed }: { closing: boolean; on_closed: () => void 
   );
 }
 
-
 export function Header() {
   const [menu_open, set_menu_open] = useState(false);
   const [menu_visible, set_menu_visible] = useState(false);
@@ -88,7 +89,9 @@ export function Header() {
         css={{
           position: "fixed",
           width: "100%",
-          ...get_screen_padding(),
+
+          marginTop: 16,
+          ...get_screen_padding()
         }}
       >
         <Flex
@@ -97,7 +100,7 @@ export function Header() {
           padding={[8, 16]}
           css={{
             width: "100%",
-            border: `2px solid ${get_color("gray_8")}`,
+            ...back_style
           }}
         >
           <A href={"/"}>
