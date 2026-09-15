@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import "./globals.css";
 import { get_color } from "@/gla_ui";
+import { ServerStyleSheet } from "@/gla_ui/StyleSheet";
 
 const font_body = IBM_Plex_Sans({
   subsets: ["cyrillic-ext", "latin-ext"],
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         }}
       >
         {children}
+        <ServerStyleSheet />
       </body>
     </html>
   );
